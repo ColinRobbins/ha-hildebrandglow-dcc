@@ -6,9 +6,7 @@
         "title": "Hildebrand Glow API access",
         "data": {
           "username": "Username",
-          "password": "Password",
-          "correction": "GAS Volume Correction factor",
-          "calorific": "GAS Calorific Value"
+          "password": "Password"
         }
       }
     },
