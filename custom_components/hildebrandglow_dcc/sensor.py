@@ -1,8 +1,9 @@
 """Platform for sensor integration."""
 import logging
-from datetime import timedelta
+from datetime import datetime, time, timedelta
 from typing import Any, Callable, Dict, Optional
 
+import pytz
 from homeassistant.components.sensor import (
     DEVICE_CLASS_ENERGY,
     DEVICE_CLASS_GAS,
@@ -13,10 +14,10 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ENERGY_KILO_WATT_HOUR
 from homeassistant.core import HomeAssistant
 
+_LOGGER = logging.getLogger(__name__)
+
 from .const import DOMAIN
 from .glow import Glow, InvalidAuth
-
-_LOGGER = logging.getLogger(__name__)
 
 SCAN_INTERVAL = timedelta(minutes=2)
 
@@ -62,6 +63,8 @@ class GlowConsumptionCurrent(SensorEntity):
     hass: HomeAssistant
 
     knownClassifiers = ["gas.consumption", "electricity.consumption"]
+
+    available = True
 
     _attr_state_class = STATE_CLASS_TOTAL_INCREASING
 
