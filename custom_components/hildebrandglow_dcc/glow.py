@@ -26,6 +26,7 @@ class Glow:
 
     @classmethod
     def update_token(cls, value):
+        """Set the token in the class, so it is available to all instances"""
         cls.token = value
 
     @classmethod
@@ -41,8 +42,8 @@ class Glow:
 
         try:
             response = requests.post(url, json=auth, headers=headers)
-        except requests.Timeout:
-            raise CannotConnect
+        except requests.Timeout as _timeout:
+            raise CannotConnect from _timeout
 
         data = response.json()
 
@@ -54,24 +55,23 @@ class Glow:
     @classmethod
     async def handle_failed_auth(cls, config: ConfigEntry, hass: HomeAssistant) -> None:
         """Attempt to refresh the current Glow token."""
-
-        _LOGGER.error("Call add executor job")
+        _LOGGER.debug("handle_failed_auth")
         glow_auth = await hass.async_add_executor_job(
             Glow.authenticate,
             APP_ID,
             config.data["username"],
             config.data["password"],
         )
-        from .config_flow import config_object
+
+        # pylint: disable=import-outside-toplevel
+        from .config_flow import config_object  # isort: skip
 
         current_config = dict(config.data.copy())
         new_config = config_object(current_config, glow_auth)
         hass.config_entries.async_update_entry(entry=config, data=new_config)
-        _LOGGER.error("DCC updated config")
 
         glow = Glow(APP_ID, glow_auth["token"])
         hass.data[DOMAIN][config.entry_id] = glow
-
 
     def retrieve_resources(self) -> List[Dict[str, Any]]:
         """Retrieve the resources known to Glowmarkt for the authenticated user."""
@@ -80,8 +80,8 @@ class Glow:
 
         try:
             response = requests.get(url, headers=headers)
-        except requests.Timeout:
-            raise CannotConnect
+        except requests.Timeout as _timeout:
+            raise CannotConnect from _timeout
 
         if response.status_code != 200:
             raise InvalidAuth
@@ -98,29 +98,60 @@ class Glow:
         # Need to pull updated data from DCC first
         catchup_url = f"{self.BASE_URL}/resource/{resource}/catchup"
 
-        url = f"{self.BASE_URL}/resource/{resource}/readings?from=" + current_date + \
-            "T00:00:00&to=" + current_date + "T23:59:59&period=P1D&offset=-60&function=sum"
+        url = (
+            f"{self.BASE_URL}/resource/{resource}/readings?from="
+            + current_date
+            + "T00:00:00&to="
+            + current_date
+            + "T23:59:59&period=P1D&offset=-60&function=sum"
+        )
         headers = {"applicationId": self.app_id, "token": self.token}
 
         try:
             response = requests.get(catchup_url, headers=headers)
             response = requests.get(url, headers=headers)
-        except requests.Timeout:
-            raise CannotConnect
+        except requests.Timeout as _timeout:
+            raise CannotConnect from _timeout
 
         if response.status_code != 200:
             if response.json()["error"] == "incorrect elements -from in the future":
-                _LOGGER.info(
-                    "Attempted to load data from the future - expected if the day has just changed")
-            elif response.status_code == 401:
+                err = "Attempted to load data from future"
+                err = err + " - expected if the day has just changed"
+                _LOGGER.info(err)
+                return None
+
+            if response.status_code == 401:
                 raise InvalidAuth
-            elif response.status_code == 404:
-                _LOGGER.error("404 error - treating as 401: " + url)
+
+            if response.status_code == 404:
+                _LOGGER.debug("404 error - treating as 401: (%s)", url)
                 raise InvalidAuth
-            else:
-                _LOGGER.error("Response Status Code:" + str(response.status_code))
-                _LOGGER.error("URL:" + url )
-                self.available = False
+
+            status = str(response.status_code)
+            _LOGGER.error("Response Status Code: %s (%s)", status, url)
+
+        data = response.json()
+        return data
+
+    def current_tariff(self, resource: Dict[str, Any]) -> Dict[str, Any]:
+        """Retrieve the current tariff for a specified resource."""
+        url = f"{self.BASE_URL}/resource/{resource}/tariff"
+        headers = {"applicationId": self.app_id, "token": self.token}
+
+        try:
+            response = requests.get(url, headers=headers)
+        except requests.Timeout as _timeout:
+            raise CannotConnect from _timeout
+
+        if response.status_code != 200:
+            if response.status_code == 401:
+                raise InvalidAuth
+            if response.status_code == 404:
+                _LOGGER.debug("Tariff 404 error - treating as 401: %s", url)
+                raise InvalidAuth
+
+            status = str(response.status_code)
+            _LOGGER.error("Tariff Response Status Code: %s (%s)", status, url)
 
         data = response.json()
         return data
