@@ -6,5 +6,5 @@
   "issue_tracker": "https://github.com/ColinRobbins/ha-hildebrandglow-dcc/issues",
   "codeowners": ["@HandyHat","@ColinRobbins"],
   "iot_class": "cloud_polling",
-  "version": "0.4.1"
+  "version": "0.4.2"
 }
