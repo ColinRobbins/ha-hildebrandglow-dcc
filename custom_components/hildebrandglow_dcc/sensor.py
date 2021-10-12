@@ -292,7 +292,7 @@ class GlowTariff(SensorEntity):
                 standing = standing / 100
                 return standing
 
-            except KeyError:
+            except (KeyError, IndexError, TypeError):
                 if plan is None:
                     _LOGGER.error("Lookup Error - plan (%s)", self._state)
                 else:
