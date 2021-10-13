@@ -58,29 +58,25 @@ async def async_setup_entry(
 
         for resource in resources:
             if resource["classifier"] in meter_classifiers:
-                base_sensor = GlowConsumptionCurrent(glow, resource, config)
+                base_sensor = GlowUsage(glow, resource, config)
                 new_entities.append(base_sensor)
                 meters[resource["classifier"]] = base_sensor
 
-                rate_sensor = GlowTariff(glow, resource, config)
+                rate_sensor = GlowStanding(glow, resource, config)
                 new_entities.append(rate_sensor)
-                tariff_sensor = GlowTariffRate(
-                    glow, resource, config, rate_sensor, False
-                )
+                tariff_sensor = GlowRate(glow, resource, config, rate_sensor, False)
                 new_entities.append(tariff_sensor)
 
                 if resource["classifier"] == "gas.consumption":
-                    m3sensor = GlowConsumptionCurrentMetric(
-                        glow, resource, config, base_sensor
-                    )
+                    m3sensor = GlowUsageMetric(glow, resource, config, base_sensor)
                     new_entities.append(m3sensor)
 
-                    t3sensor = GlowTariffRate(glow, resource, config, rate_sensor, True)
+                    t3sensor = GlowRate(glow, resource, config, rate_sensor, True)
                     new_entities.append(t3sensor)
 
         for resource in resources:
             if resource["classifier"] in cost_classifiers:
-                sensor = GlowConsumptionCurrent(glow, resource, config)
+                sensor = GlowUsage(glow, resource, config)
                 if resource["classifier"] == "gas.consumption.cost":
                     sensor.meter = meters["gas.consumption"]
                 else:
@@ -92,7 +88,7 @@ async def async_setup_entry(
     return True
 
 
-class GlowConsumptionCurrent(SensorEntity):
+class GlowUsage(SensorEntity):
     """Sensor object for the Glowmarkt resource's current consumption."""
 
     def __init__(self, glow: Glow, resource: Dict[str, Any], config: ConfigEntry):
@@ -131,8 +127,9 @@ class GlowConsumptionCurrent(SensorEntity):
             icon = "mdi:flash"
         if self.resource["dataSourceResourceTypeInfo"]["type"] == "GAS":
             icon = "mdi:fire"
-        if self.resource["baseUnit"] == "pence":
+        if self.device_class == DEVICE_CLASS_MONETARY:
             icon = "mdi:cash"
+
         return icon
 
     @property
@@ -195,20 +192,24 @@ class GlowConsumptionCurrent(SensorEntity):
             return "GBP"
         return None
 
-    async def async_update(self) -> None:
-        """Fetch new state data for the sensor.
-        This is the only method that should fetch new data for Home Assistant.
-        """
+    async def _glow_update(self, func: Callable) -> None:
+        """Get updated data from Glow"""
         try:
             self._state = await self.hass.async_add_executor_job(
-                self.glow.current_usage, self.resource["resourceId"]
+                func, self.resource["resourceId"]
             )
         except InvalidAuth:
             _LOGGER.debug("calling auth failed 2")
             await Glow.handle_failed_auth(self.config, self.hass)
 
+    async def async_update(self) -> None:
+        """Fetch new state data for the sensor.
+        This is the only method that should fetch new data for Home Assistant.
+        """
+        await self._glow_update(self.glow.current_usage)
 
-class GlowConsumptionCurrentMetric(GlowConsumptionCurrent):
+
+class GlowUsageMetric(GlowUsage):
     """Metric version of the sensor."""
 
     def __init__(
@@ -216,7 +217,7 @@ class GlowConsumptionCurrentMetric(GlowConsumptionCurrent):
         glow: Glow,
         resource: Dict[str, Any],
         config: ConfigEntry,
-        buddy: GlowConsumptionCurrent,
+        buddy: GlowUsage,
     ):
         """Initialize the sensor."""
         super().__init__(glow, resource, config)
@@ -267,7 +268,7 @@ class GlowConsumptionCurrentMetric(GlowConsumptionCurrent):
         self._state = self.buddy.rawdata
 
 
-class GlowTariff(GlowConsumptionCurrent):
+class GlowStanding(GlowUsage):
     """Sensor object for the Glowmarkt resource's standing tariff."""
 
     def __init__(self, glow: Glow, resource: Dict[str, Any], config: ConfigEntry):
@@ -292,11 +293,6 @@ class GlowTariff(GlowConsumptionCurrent):
         return None
 
     @property
-    def icon(self) -> Optional[str]:
-        """Icon to use in the frontend, if any."""
-        return "mdi:currency-gbp"
-
-    @property
     def state(self) -> Optional[str]:
         """Return the state of the sensor."""
         plan = None
@@ -317,11 +313,6 @@ class GlowTariff(GlowConsumptionCurrent):
         return None
 
     @property
-    def rawdata(self) -> Optional[str]:
-        """Return the raw state of the sensor."""
-        return self._state
-
-    @property
     def device_class(self) -> str:
         """Return the device class."""
         return DEVICE_CLASS_MONETARY
@@ -336,16 +327,10 @@ class GlowTariff(GlowConsumptionCurrent):
 
         This is the only method that should fetch new data for Home Assistant.
         """
-        try:
-            self._state = await self.hass.async_add_executor_job(
-                self.glow.current_tariff, self.resource["resourceId"]
-            )
-        except InvalidAuth:
-            _LOGGER.debug("calling auth failed 2")
-            await Glow.handle_failed_auth(self.config, self.hass)
+        await self._glow_update(self.glow.current_tariff)
 
 
-class GlowTariffRate(GlowTariff):
+class GlowRate(GlowStanding):
     """Sensor object for the Glowmarkt resource's current unit tariff."""
 
     def __init__(
@@ -353,7 +338,7 @@ class GlowTariffRate(GlowTariff):
         glow: Glow,
         resource: Dict[str, Any],
         config: ConfigEntry,
-        buddy: GlowTariff,
+        buddy: GlowStanding,
         metric: bool,
     ):
         """Initialize the sensor."""
