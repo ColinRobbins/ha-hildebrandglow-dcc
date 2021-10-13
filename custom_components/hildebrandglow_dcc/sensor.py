@@ -7,6 +7,7 @@ from homeassistant.components.sensor import (
     DEVICE_CLASS_ENERGY,
     DEVICE_CLASS_GAS,
     DEVICE_CLASS_MONETARY,
+    STATE_CLASS_MEASUREMENT,
     STATE_CLASS_TOTAL_INCREASING,
     SensorEntity,
 )
@@ -28,13 +29,11 @@ async def async_setup_entry(
     """Set up the sensor platform."""
     new_entities = []
 
-    known_classifiers = [
-        "gas.consumption",
-        "electricity.consumption",
+    cost_classifiers = [
         "gas.consumption.cost",
         "electricity.consumption.cost",
     ]
-    tariff_classifiers = [
+    meter_classifiers = [
         "gas.consumption",
         "electricity.consumption",
     ]
@@ -43,6 +42,7 @@ async def async_setup_entry(
         glow = hass.data[DOMAIN][entry]
 
         resources: dict = {}
+        meters = {}
 
         try:
             resources = await hass.async_add_executor_job(glow.retrieve_resources)
@@ -57,17 +57,17 @@ async def async_setup_entry(
             resources = await hass.async_add_executor_job(glow.retrieve_resources)
 
         for resource in resources:
-            if resource["classifier"] in known_classifiers:
+            if resource["classifier"] in meter_classifiers:
                 base_sensor = GlowConsumptionCurrent(glow, resource, config)
                 new_entities.append(base_sensor)
+                meters[resource["classifier"]] = base_sensor
 
-                if resource["classifier"] in tariff_classifiers:
-                    rate_sensor = GlowTariff(glow, resource, config)
-                    new_entities.append(rate_sensor)
-                    tariff_sensor = GlowTariffRate(
-                        glow, resource, config, rate_sensor, False
-                    )
-                    new_entities.append(tariff_sensor)
+                rate_sensor = GlowTariff(glow, resource, config)
+                new_entities.append(rate_sensor)
+                tariff_sensor = GlowTariffRate(
+                    glow, resource, config, rate_sensor, False
+                )
+                new_entities.append(tariff_sensor)
 
                 if resource["classifier"] == "gas.consumption":
                     m3sensor = GlowConsumptionCurrentMetric(
@@ -78,23 +78,31 @@ async def async_setup_entry(
                     t3sensor = GlowTariffRate(glow, resource, config, rate_sensor, True)
                     new_entities.append(t3sensor)
 
+        for resource in resources:
+            if resource["classifier"] in cost_classifiers:
+                sensor = GlowConsumptionCurrent(glow, resource, config)
+                if resource["classifier"] == "gas.consumption.cost":
+                    sensor.meter = meters["gas.consumption"]
+                else:
+                    sensor.meter = meters["electricity.consumption"]
+                new_entities.append(sensor)
+
         async_add_entities(new_entities)
 
     return True
 
 
 class GlowConsumptionCurrent(SensorEntity):
-
     """Sensor object for the Glowmarkt resource's current consumption."""
-
-    _attr_state_class = STATE_CLASS_TOTAL_INCREASING
 
     def __init__(self, glow: Glow, resource: Dict[str, Any], config: ConfigEntry):
         """Initialize the sensor."""
+        self._attr_state_class = STATE_CLASS_TOTAL_INCREASING
         self._state: Optional[Dict[str, Any]] = None
         self.glow = glow
         self.resource = resource
         self.config = config
+        self.meter = None
 
     @property
     def unique_id(self) -> str:
@@ -134,9 +142,16 @@ class GlowConsumptionCurrent(SensorEntity):
             human_type = "Electricity"
         elif self.resource["dataSourceResourceTypeInfo"]["type"] == "GAS":
             human_type = "Gas"
+        else:
+            print(self.resource)
+
+        if self.meter:
+            resource = self.meter.resource["resourceId"]
+        else:
+            resource = self.resource["resourceId"]
 
         return {
-            "identifiers": {(DOMAIN, self.resource["resourceId"])},
+            "identifiers": {(DOMAIN, resource)},
             "name": f"Smart {human_type} Meter",
         }
 
@@ -250,15 +265,13 @@ class GlowConsumptionCurrentMetric(GlowConsumptionCurrent):
         self._state = self.buddy.rawdata
 
 
-class GlowTariff(SensorEntity):
+class GlowTariff(GlowConsumptionCurrent):
     """Sensor object for the Glowmarkt resource's standing tariff."""
 
     def __init__(self, glow: Glow, resource: Dict[str, Any], config: ConfigEntry):
         """Initialize the sensor."""
-        self._state: Optional[Dict[str, Any]] = None
-        self.glow = glow
-        self.resource = resource
-        self.config = config
+        super().__init__(glow, resource, config)
+        self._attr_state_class = STATE_CLASS_MEASUREMENT
 
     @property
     def unique_id(self) -> str:
