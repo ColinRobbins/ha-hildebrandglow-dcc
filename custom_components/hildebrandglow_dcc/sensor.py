@@ -152,6 +152,8 @@ class GlowConsumptionCurrent(SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, resource)},
+            "manufacturer": "Hildebrand",
+            "model": "Glow",
             "name": f"Smart {human_type} Meter",
         }
 
