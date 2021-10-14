@@ -19,7 +19,7 @@ The data provided will be delayed by around 30 minutes. To get real-time consump
 
 You can install this component through [HACS](https://hacs.xyz/) and receive automatic updates.
 
-After installing HACS, visit the HACS _Integrations_ pane and add `https://github.com/HandyHat/ha-hildebrandglow-dcc` as an `Integration` by following [these instructions](https://hacs.xyz/docs/faq/custom_repositories/). You'll then be able to install it through the _Integrations_ pane.
+After installing HACS, visit the HACS _Integrations_ pane and add `https://github.com/ColinRobbins/ha-hildebrandglow-dcc` as an `Integration` by following [these instructions](https://hacs.xyz/docs/faq/custom_repositories/). You'll then be able to install it through the _Integrations_ pane.
 
 ### Manual installation
 
