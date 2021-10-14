@@ -159,8 +159,8 @@ class GlowConsumptionCurrent(SensorEntity):
                     res = res / 100.0
                     return round(res, 2)
                 return round(res, 3)
-            except (KeyError, IndexError, TypeError):
-                _LOGGER.error("Lookup Error - data (%s)", self._state)
+            except (KeyError, IndexError, TypeError) as _error:
+                _LOGGER.error("Lookup Error - data (%s): (%s)", _error, self._state)
                 return None
         return None
 
@@ -292,11 +292,11 @@ class GlowTariff(SensorEntity):
                 standing = standing / 100
                 return standing
 
-            except (KeyError, IndexError, TypeError):
+            except (KeyError, IndexError, TypeError) as _error:
                 if plan is None:
-                    _LOGGER.error("Lookup Error - plan (%s)", self._state)
+                    _LOGGER.error("Lookup Error - plan (%s): (%s)", _error, self._state)
                 else:
-                    _LOGGER.error("Lookup Error - standing (%s)", plan)
+                    _LOGGER.error("Lookup Error - standing (%s): (%s)", _error, plan)
                 return None
 
         return None
@@ -398,11 +398,11 @@ class GlowTariffRate(GlowTariff):
 
                 return round(rate, 4)
 
-            except (KeyError, IndexError, TypeError):
+            except (KeyError, IndexError, TypeError) as _error:
                 if plan is None:
-                    _LOGGER.error("Key Error - plan (%s)", self._state)
+                    _LOGGER.error("Key Error - plan (%s): (%s)", _error, self._state)
                 else:
-                    _LOGGER.error("Key Error - rate (%s)", rate)
+                    _LOGGER.error("Key Error - rate (%s): (%s)", _error, plan)
                 return None
 
         return None
