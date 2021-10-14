@@ -136,7 +136,7 @@ class Glow:
         else:
             utc_offset = time.timezone
 
-        if utc_offest != 0:
+        if utc_offset != 0:
             utc_offset = int(utc_offset / 60)
             utc_str = f"&offset={utc_offset}"
         else:
