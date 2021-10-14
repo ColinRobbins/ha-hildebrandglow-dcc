@@ -300,7 +300,7 @@ class GlowStanding(GlowUsage):
             try:
                 plan = self._state["data"][0]["currentRates"]
                 standing = plan["standingCharge"]
-                standing = standing / 100
+                standing = float(standing) / 100
                 return standing
 
             except (KeyError, IndexError, TypeError):
@@ -392,7 +392,7 @@ class GlowRate(GlowStanding):
             try:
                 plan = self._state["data"][0]["currentRates"]
                 rate = plan["rate"]
-                rate = rate / 100
+                rate = float(rate) / 100
                 if self.metric:
                     rate = rate / self.conversion
 
