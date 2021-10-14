@@ -152,7 +152,7 @@ class Glow:
         """Retrieve the usage now specified resource."""
         url = f"{self.BASE_URL}/resource/{resource}/current"
 
-        return self._current_data(resource, url, True)
+        return self._current_data(resource, url, False)
 
 
 class CannotConnect(exceptions.HomeAssistantError):
