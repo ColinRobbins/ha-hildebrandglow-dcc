@@ -4,6 +4,8 @@ from datetime import datetime
 from typing import Any, Dict, List
 
 import requests
+import time
+
 from homeassistant import exceptions
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -127,8 +129,18 @@ class Glow:
     def current_usage(self, resource: Dict[str, Any]) -> Dict[str, Any]:
         """Retrieve the current usage for a specified resource."""
         # Get today's date
-        current_time = datetime.now()
+        current_time = datetime.utcnow()
         current_date = current_time.strftime("%Y-%m-%d")
+        if time.daylight and (time.localtime().tm_isdst > 0):
+            utc_offset = time.altzone 
+        else:
+            utc_offset = time.timezone
+
+        if utc_offest != 0:
+            utc_offset = int(utc_offset / 60)
+            utc_str = f"&offset={utc_offset}"
+        else:
+            utc_str = ""
 
         # Need to pull updated data from DCC first
 
@@ -137,7 +149,9 @@ class Glow:
             + current_date
             + "T00:00:00&to="
             + current_date
-            + "T23:59:59&period=P1D&offset=-60&function=sum"
+            + "T23:59:59&period=P1D"
+            + utc_str
+            + "&function=sum"
         )
 
         return self._current_data(resource, url, True)
