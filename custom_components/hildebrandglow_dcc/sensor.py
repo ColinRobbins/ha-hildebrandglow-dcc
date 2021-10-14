@@ -170,7 +170,7 @@ class GlowUsage(SensorEntity):
             try:
                 res = self._state["data"][0][1]
                 if self._state["units"] == "pence":
-                    res = res / 100.0
+                    res = float(res) / 100.0
                     return round(res, 2)
                 return round(res, 3)
             except (KeyError, IndexError, TypeError):
