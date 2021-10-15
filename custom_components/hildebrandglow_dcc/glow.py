@@ -132,7 +132,7 @@ class Glow:
         current_time = datetime.utcnow()
         current_date = current_time.strftime("%Y-%m-%d")
         if time.daylight and (time.localtime().tm_isdst > 0):
-            utc_offset = time.altzone 
+            utc_offset = time.altzone
         else:
             utc_offset = time.timezone
 
