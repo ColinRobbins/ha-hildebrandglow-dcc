@@ -1,11 +1,10 @@
 """Classes for interacting with the Glowmarkt API."""
 import logging
+import time
 from datetime import datetime
 from typing import Any, Dict, List
 
 import requests
-import time
-
 from homeassistant import exceptions
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -104,8 +103,13 @@ class Glow:
 
             response = requests.get(url, headers=headers)
 
-        except requests.Timeout as _timeout:
-            raise CannotConnect from _timeout
+        except requests.Timeout as err:
+            _LOGGER.warning("Timeout connecting to Glow %s", err)
+            return None
+
+        except requests.RequestException as err:
+            _LOGGER.warning("Error connecting to Glow %s", err)
+            return None
 
         if response.status_code != 200:
             if response.json()["error"] == "incorrect elements -from in the future":
@@ -122,7 +126,8 @@ class Glow:
                 raise InvalidAuth
 
             status = str(response.status_code)
-            _LOGGER.error("Response Status Code: %s (%s)", status, url)
+            _LOGGER.error("Glow response status code: %s (%s)", status, url)
+            return None
 
         return response.json()
 
