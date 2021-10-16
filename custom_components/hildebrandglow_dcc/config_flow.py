@@ -59,7 +59,8 @@ class DomainConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors = {}
         if user_input is not None:
             try:
-                assert self.hass is not None
+                if self.hass is None:
+                    raise AssertionError
                 info = await validate_input(self.hass, user_input)
 
                 return self.async_create_entry(title=info["name"], data=info)
