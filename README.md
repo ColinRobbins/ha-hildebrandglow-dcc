@@ -18,6 +18,8 @@ The data provided will be delayed by around 30 minutes. To get real-time consump
 
 ## Installation
 
+If migrating from the @HandyHat version follow the [migration](https://github.com/ColinRobbins/ha-hildebrandglow-dcc/issues/4) instructions.
+
 ### Automated installation through HACS
 
 You can install this component through [HACS](https://hacs.xyz/) and receive automatic updates.
