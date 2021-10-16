@@ -5,6 +5,7 @@
 [![Validate with hassfest](https://github.com/ColinRobbins/ha-hildebrandglow-dcc/actions/workflows/hassfest.yaml/badge.svg)](https://github.com/ColinRobbins/ha-hildebrandglow-dcc/actions/workflows/hassfest.yaml)
 [![Validate with HACS](https://github.com/ColinRobbins/ha-hildebrandglow-dcc/actions/workflows/validate.yaml/badge.svg)](https://github.com/ColinRobbins/ha-hildebrandglow-dcc/actions/workflows/validate.yaml)
 [![CodeFactor](https://www.codefactor.io/repository/github/colinrobbins/ha-hildebrandglow-dcc/badge)](https://www.codefactor.io/repository/github/colinrobbins/ha-hildebrandglow-dcc)
+[![DeepSource](https://deepsource.io/gh/ColinRobbins/ha-hildebrandglow-dcc.svg/?label=active+issues&show_trend=true&token=MDhJZc9apbqyriqeh0VbEEx8)](https://deepsource.io/gh/ColinRobbins/ha-hildebrandglow-dcc/?ref=repository-badge)
 
 Home Assistant integration for *free* energy consumption data from UK SMETS (Smart) meters using the Hildebrand Glow API.
 
