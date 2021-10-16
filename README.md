@@ -1,6 +1,7 @@
 # UK Smart Meter (DCC) Integration via Hildebrand Glow API 
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badge)](https://github.com/custom-components/hacs)
+
 [![CodeQL](https://github.com/ColinRobbins/ha-hildebrandglow-dcc/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/ColinRobbins/ha-hildebrandglow-dcc/actions/workflows/codeql-analysis.yml)
 [![Validate with hassfest](https://github.com/ColinRobbins/ha-hildebrandglow-dcc/actions/workflows/hassfest.yaml/badge.svg)](https://github.com/ColinRobbins/ha-hildebrandglow-dcc/actions/workflows/hassfest.yaml)
 [![Validate with HACS](https://github.com/ColinRobbins/ha-hildebrandglow-dcc/actions/workflows/validate.yaml/badge.svg)](https://github.com/ColinRobbins/ha-hildebrandglow-dcc/actions/workflows/validate.yaml)
