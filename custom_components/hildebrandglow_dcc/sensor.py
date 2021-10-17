@@ -333,7 +333,7 @@ class GlowStanding(GlowUsage):
 
 class GlowRate(GlowStanding):
     """Sensor object for the Glowmarkt resource's current unit tariff."""
-    
+
     # pylint: disable=too-many-arguments
     def __init__(
         self,
