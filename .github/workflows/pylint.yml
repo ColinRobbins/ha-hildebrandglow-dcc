@@ -21,5 +21,4 @@ jobs:
         pip install -r requirements-dev.txt
     - name: Analysing the code with pylint
       run: |
-        cd custom_components
-        pylint hildebrandglow_dcc/*.py
+        pylint custom_components/hildebrandglow_dcc/*.py
