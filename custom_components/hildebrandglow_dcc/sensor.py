@@ -1,5 +1,4 @@
 """Platform for sensor integration."""
-# pylint: disable=cyclic-import
 import logging
 from datetime import timedelta
 from typing import Any, Callable, Dict, Optional
