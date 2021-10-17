@@ -27,6 +27,7 @@ async def async_setup_entry(
     hass: HomeAssistant, config: ConfigEntry, async_add_entities: Callable
 ) -> bool:
     """Set up the sensor platform."""
+    # pylint: disable=too-many-locals
     new_entities = []
 
     cost_classifiers = [
@@ -332,6 +333,7 @@ class GlowStanding(GlowUsage):
 
 class GlowRate(GlowStanding):
     """Sensor object for the Glowmarkt resource's current unit tariff."""
+    # pylint: disable=too-many-arguments
 
     def __init__(
         self,
