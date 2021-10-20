@@ -1,6 +1,6 @@
 name: Pylint
 
-on: 
+on:
     push:
     pull_request:
 
