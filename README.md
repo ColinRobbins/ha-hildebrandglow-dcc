@@ -48,6 +48,9 @@ Once you've authenticated to Glow, the integration will automatically set up the
 - Electric Cost (Today)
 
   Cost in pence of electricity used today
+- Electric Consumption (Year)
+
+  Consumption for the year to date in kWh
 - Electric Tariff Standing
 
   Todays standing charge for electricity (GBP)
@@ -61,6 +64,9 @@ Once you've authenticated to Glow, the integration will automatically set up the
 - Gas Consumption Metric (Today)
 
   Consumption today in m³
+- Electric Consumption (Year)
+
+  Consumption for the year to date in kW
 - Gas Cost (Today)
 
   Cost in pence of GAS used today
